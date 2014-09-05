@@ -33,12 +33,14 @@
 #
 #
 
-
 # Simple Lotka-Volterra Model
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from scipy import integrate
+import os
+
+os.chdir('C:\Users\ed\Google Drive\MarineEco')
  
 #=======================================================
 def LV1(par,initial_cond,start_t,end_t,incr):
@@ -107,7 +109,7 @@ for i in xrange(0,11):
     plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
     title1 = 'b = ' + str(np.round(b1,4))
     plt.title(title1)
-    pathname1 = '/home/ed/Dropbox/Ben and Ed/DynModel/Plots/LV' + str(i) +'mean.pdf'
+    pathname1 = 'LV' + str(i) +'mean.pdf'
     #plt.show()
     plt.savefig(pathname1, format='pdf')
     plt.close()
@@ -117,12 +119,12 @@ for i in xrange(0,11):
     plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
     title1 = 'b = ' + str(np.round(b1,4))
     plt.title(title1)
-    pathname1 = '/home/ed/Dropbox/Ben and Ed/DynModel/Plots/LV' + str(i) +'value.pdf'
+    pathname1 = 'LV' + str(i) +'value.pdf'
     #plt.show()
     plt.savefig(pathname1, format='pdf')
     plt.close()
 
 # Save the datasets
 data1out = np.concatenate( (Tout,P0out,P1out), axis= 1)
-np.savetxt("/home/ed/Dropbox/Ben and Ed/DynModel/Datasets/Lotka1b1data.csv", data1out, delimiter=",")
-np.savetxt("/home/ed/Dropbox/Ben and Ed/DynModel/Datasets/Lotka1x1data.csv", x1, delimiter=",")
+np.savetxt("Lotka1b1data.csv", data1out, delimiter=",")
+np.savetxt("Lotka1x1data.csv", x1, delimiter=",")
