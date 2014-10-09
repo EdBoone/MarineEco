@@ -55,9 +55,9 @@ par1 = (D1, si, mu1, mu2, y1, y2, k1, k2, epsilon1, T1)
 t1[:], x1[:], x2[:], x3[:] = KotDF1( par1, x0, 0, 15., 101 )
  
 plt.figure()
-plt.plot(Tout[:,i],F0out[:,i],'-b',Tout[:,i],F1out[:,i],'-r')
+plt.plot(t1, x1,'-b', t1 , x2,'-r')
 plt.ylim( [0,350])
-plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
-title1 = 'b = ' + str(np.round(b1,4))
+#plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
+title1 = 'It works???'
 plt.title(title1)
  
