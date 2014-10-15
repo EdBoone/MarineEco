@@ -88,18 +88,56 @@ x0 = [0.25, 0.5, 0.5]
 
 # Pack the parameters together
 par1 = (D1, si, mu1, mu2, y1, y2, k1, k2, epsilon1, T1)
-t1a[:], x1a[:], x2a[:], x3a[:] = KotDF1( par1, x0, 0, 45., 1001 )
+t1a[:], x1a[:], x2a[:], x3a[:] = KotDF1( par1, x0, 0, 50., 1001 )
 
-x1d = np.random.poisson(x1)
+s1s = range( 0, 75, 5 )
+s2s = range( 0, 275, 5)
+x1d = np.random.poisson(x1a)
+x2d = np.random.poisson(x2a)
 
   
 plt.figure()
-plt.scatter(t1, x1d)
-plt.plot(t1, x1, '-b', t1a , x1a, '-r' )
+plt.scatter(t1a[s1s], x1d[s1s])
+plt.plot( t1 , x1, '-r' )
 plt.ylim( [0,100] )
 plt.xlim( [0,45] )
+plt.vlines(max(t1a[s1s]),0,100, linestyles='dashed', colors ='r')
 #plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
-title1 = 'It works???'
+title1 = 'Data Assimilate: Step 1 \n x1'
 plt.title(title1)
+plt.savefig('DSStep1x1.pdf', format='pdf')
+
+plt.figure()
+plt.scatter(t1a[s1s], x2d[s1s])
+plt.plot( t1 , x2, '-r' )
+plt.ylim( [0,100] )
+plt.xlim( [0,45] )
+plt.vlines(max(t1a[s1s]),0,100, linestyles='dashed', colors ='r')
+#plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
+title1 = 'Data Assimilate: Step 1 \n x2'
+plt.title(title1)
+plt.savefig('DSStep1x2.pdf', format='pdf') 
  
- 
+plt.figure()
+plt.scatter(t1a[s2s], x1d[s2s])
+plt.plot(t1, x1, '-r', t1a , x1a, '-b' )
+plt.ylim( [0,100] )
+plt.xlim( [0,45] )
+plt.vlines(max(t1a[s1s]),0,100, linestyles='dashed', colors ='r')
+plt.vlines(max(t1a[s2s]),0,100, linestyles='dashed', colors ='b')
+#plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
+title1 = 'Data Assimilate: Step 2 \n x1'
+plt.title(title1)
+plt.savefig('DSStep2x1.pdf', format='pdf')
+
+plt.figure()
+plt.scatter(t1a[s2s], x2d[s2s])
+plt.plot( t1, x2, '-r', t1a , x2a, '-b',  )
+plt.ylim( [0,100] )
+plt.xlim( [0,45] )
+plt.vlines(max(t1a[s1s]),0,100, linestyles='dashed', colors ='r')
+plt.vlines(max(t1a[s2s]),0,100, linestyles='dashed', colors ='b')
+#plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
+title1 = 'Data Assimilate: Step 2 \n x2'
+plt.title(title1)
+plt.savefig('DSStep2x2.pdf', format='pdf') 
