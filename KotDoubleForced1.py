@@ -95,6 +95,27 @@ s2s = range( 0, 275, 5)
 x1d = np.random.poisson(x1a)
 x2d = np.random.poisson(x2a)
 
+plt.figure()
+plt.scatter(t1a[s1s], x1d[s1s])
+#plt.plot( t1 , x1, '-r' )
+plt.ylim( [0,100] )
+plt.xlim( [0,45] )
+#plt.vlines(max(t1a[s1s]),0,100, linestyles='dashed', colors ='r')
+#plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
+title1 = 'Data Assimilate: Step 0 \n x1'
+plt.title(title1)
+plt.savefig('DSStep0x1.pdf', format='pdf')
+
+plt.figure()
+plt.scatter(t1a[s1s], x2d[s1s])
+#plt.plot( t1 , x1, '-r' )
+plt.ylim( [0,100] )
+plt.xlim( [0,45] )
+#plt.vlines(max(t1a[s1s]),0,100, linestyles='dashed', colors ='r')
+#plt.legend(('Foxes', 'Rabbits'),'upper center',ncol=2)
+title1 = 'Data Assimilate: Step 0 \n x2'
+plt.title(title1)
+plt.savefig('DSStep0x2.pdf', format='pdf')
   
 plt.figure()
 plt.scatter(t1a[s1s], x1d[s1s])
