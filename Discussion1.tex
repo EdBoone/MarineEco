@@ -82,7 +82,18 @@ Discussion on Data Assimilation
   \end{center}\caption{ Data for (a) x1, (b) x2 , (c) data with fitted model for x1, (d) data with fitted model for x2, (e) additional data and updated fitted model for x1 and (f) additional data and updated fitted model for x2.}\label{fig:Example1}
 \end{figure}
 
+\section{Competition Model}
+\label{sect-competition}
 
+Here is my stab at putting together a competion model with predators.
+
+\begin{eqnarray*}
+\frac{d x_1}{dt} &=& r_1 x_1 - r_1 x_1 \left( \frac{ x_1 + \alpha_{12} x_2 + \alpha_{13} x_3}{K_1} \right)  \\
+\frac{d x_2}{dt} &=& r_2 x_2 - r_2 x_2 \left( \frac{ x_2 + \alpha_{21} x_1 + \alpha_{23} x_3}{K_2} \right) - \beta_{24} x_2 x_4  \\
+\frac{d x_3}{dt} &=& r_3 x_3 - r_3 x_3 \left( \frac{ x_3 + \alpha_{31} x_1 + \alpha_{32} x_2}{K_3} \right) - \beta_{35} x_3 x_5   \\
+\frac{d x_4}{dt} &=& \beta_{24} x_2 x_4  - c_4 x_4 \\
+\frac{d x_5}{dt} &=& \beta_{35} x_3 x_5  - c_5 x_5 \\
+\end{eqnarray*}
 
 \section*{Acknowledgements}
 We thank the opportunities provided by SAMSI. 
