@@ -25,8 +25,8 @@
 
 \pagestyle{fancy}
 \fancyhead{} % clear all header fields
-\fancyhead[CE]{\textit{Boone}}
-\fancyhead[CO]{\textit{Data Assimilation Discussion}}
+\fancyhead[CE]{\textit{Boone, Pasour, Grudzen, Han and Jenkins}}
+\fancyhead[CO]{\textit{Discussion Document}}
 \fancyhead[RE]{\thepage}
 \fancyhead[LO]{\thepage}
 \lfoot{}
@@ -38,13 +38,17 @@
 
 %===================================================================================
 \begin{document}
-\title{\large \textbf{Data Assimilation Discussion}}
+\title{\large \textbf{Discussion Document}}
 \author{
 \normalsize Edward L.~Boone\\ 
-\normalsize \textit{Department of Statistical Sciences and Operations Research,} \\
-\normalsize \textit{Virginia Commonwealth University,}\\ 
-\normalsize \textit{Richmond, VA 23284, USA}\\ 
-\normalsize \textit{E-mail: elboone@vcu.edu} \\[0.1in]
+%\normalsize \textit{Department of Statistical Sciences and Operations Research,} \\
+%\normalsize \textit{Virginia Commonwealth University,}\\ 
+%\normalsize \textit{Richmond, VA 23284, USA}\\ 
+%\normalsize \textit{E-mail: elboone@vcu.edu} \\[0.1in]
+\normalsize Virginia Pasour \\
+\normalsize Colin Grudzen \\
+\normalsize Shirley Han \\
+\normalsize Lea Jenkins \\
 }
 %\date{March 13, 2014}
 \maketitle
@@ -64,6 +68,16 @@ Discussion on Data Assimilation
 %===================================================================================
 \section{Introduction}
 \label{sect-intro}
+
+\section{Kot Model}
+Here is the Kot (1992) Model used in Figure~\ref{fig:Example1}.
+
+\begin{eqnarray*}
+  \frac{dS}{dt} &=& D \left[ S_i \left( 1 + \epsilon \sin \frac{2 \pi}{T} t \right) - S \right] - \frac{\mu_1}{Y_1} \frac{SH}{K_1 + S} \\
+   \frac{dH}{dt} &=&  \mu_1 \frac{SH}{K_1 + S} - DH -  \frac{\mu_2}{Y_2} \frac{HP}{K_2 + H}  \\
+   \frac{dP}{dt} &=&  \mu_2 \frac{HP}{K_2 + H} - DP \\
+\end{eqnarray*}
+
 
 \begin{figure}[ht!]
   \begin{center}
@@ -94,7 +108,14 @@ Here is my stab at putting together a competion model with predators.
 \frac{d x_4}{dt} &=& \beta_{24} x_2 x_4  - c_4 x_4 \\
 \frac{d x_5}{dt} &=& \beta_{35} x_3 x_5  - c_5 x_5 \\
 \end{eqnarray*}
-
+\begin{itemize}
+  \item $x_1$ is coral, $x_2$ is tall algae, $x_3$ is short algae, $x_4$ is fish that eat tall algae and $x_5$ is the fist that eat short algae.  
+  \item $r_1$, $r_2$ and $r_3$ are the recruitment parameters for coral, tall algae and short algae, respectively.
+  \item $K_1$, $K_2$ and $K_3$ are the carrying capacity parameters for coral, tall algae and short algae, respectively.
+  \item $\alpha_{ij}$ is the competition of $x_j$ on $x_i$.
+  \item $\beta_{ij}$ is the predation success of $x_j$ on $x_i$.
+  \item $c_i$ is the mortality rate for species $x_i$.
+\end{itemize}
 \section*{Acknowledgements}
 We thank the opportunities provided by SAMSI. 
 
@@ -103,6 +124,9 @@ We thank the opportunities provided by SAMSI.
 %\bibitem{bern} 
 Berntsen, J., Espelid, T.O., and Genz, A. (1991) An Adaptive Algorithm for the Approximate Calculation 
 of Multiple Integrals, {\it ACM Transactions on Mathematical Software}, {\bf 17}, 437--451.
+
+\bibitem[\protect\citeauthoryear{Kot, Sayler, and Schultz}{Kot et al.}{1992}]{kot} 
+Kot, M., Sayler, G.S. and Schultz, T.W. (1992) Complex Dynamics in a Model Microbial System, {\it Bulletin of Mathematical Biology}, {\bf 54}, 619--648.
 \end{thebibliography}
 
 
