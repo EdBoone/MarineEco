@@ -20,12 +20,15 @@ def LN_para_likelyhood(mean,variance,sample):
     Output is an array on lognormal scale of the likelyhood of each outcome
     (sample) on given the associated mean and variance of the data."""
     
-    #define the denominator, multiplication across arrays with Schur product
-    denom  = sample*variance*sqrt(2*pi)
-    #define the numerator, again operating on each array element individually
-    numer  = exp((-(log(sample) - mean)**2)/(2*variance**2))
-    #the log scale likelyhood is computed for each array element
-    output = log(numer/denom)
+    #define the log of the denominator
+    # with multiplication across arrays with Schur product
+    denom  = -log(sample*variance*sqrt(2.0*pi))
+    #define the numerator in log scale
+    #again operating on each array element individually
+    numer  = -(log(sample) - mean)**2/(2.0*variance**2)
+    
+    #calclulate the likelyhood
+    output = numer + denom
     
     return(output)
     
