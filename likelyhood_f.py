@@ -22,9 +22,9 @@ def LN_para_likelyhood(mean,variance,sample):
     
     #define the denominator, multiplication across arrays with Schur product
     denom  = sample*variance*sqrt(2*pi)
-    #define the numerator
+    #define the numerator, again operating on each array element individually
     numer  = exp((-(log(sample) - mean)**2)/(2*variance**2))
-    #the log scale likelyhood is computed
+    #the log scale likelyhood is computed for each array element
     output = log(numer/denom)
     
     return(output)
