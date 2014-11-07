@@ -76,13 +76,13 @@ def LogNormalLn( x1, mean1, sd1 ):
 #Here we define the log scale log-normal 
 #likelyhood function for the parameter estimates
 
-def LN(mean,variance,sample):
+def LN(mean,sd1,sample):
     
     """This function evaluates the likelyhood of a given sample
     
     This is a vectorized parameter likelyhood function which takes an array of
-    data (mean), the associated array of variances (variance), and the
-    parameter dependent outcomes (sample)
+    data (mean), the associated array of standard deviations (sd1), 
+    and the parameter dependent outcomes (sample)
     
     Inputs are of the form
     
@@ -93,15 +93,23 @@ def LN(mean,variance,sample):
     
     #define the log of the denominator
     # with multiplication across arrays with Schur product
-    denom  = -log(sample*variance*sqrt(2.0*pi))
+    denom  = -log(sample*sd1*sqrt(2.0*pi))
     #define the numerator in log scale
     #again operating on each array element individually
-    numer  = -(log(sample) - mean)**2/(2.0*variance**2)
+    numer  = -0.5*((log(sample) - mean)/sd1)**2
     
     #calclulate the likelyhood
     output = numer + denom
     
     return(output)
+
+
+###############################################################################
+# Create the chi square distribution on the Log scale    
+def chisqln( x1, df1 ):
+    out1 = -df1/2*np.log( 2 ) - sc.gammaln( df1/2 )
+    out1 = out1 + ( df1/2 - 1 )*np.log( x1 ) - x1/2
+    return out1
 
 ###############################################################################
 # Create the log-scale likelihood for the marine eco data
@@ -144,13 +152,13 @@ def MarineLk1( X1, par1, initial_cond, start_t, end_t, incr,likely=LN ):
     traj = odeint(Comp_D, initial_cond, time, args = (A,B,C,K,R))
 
     #dictionary of likelyhoods for each observation is created
-    L_hoods = {}
+    L_hood = 0.0
 
     #trajectory at obsservation times is compared with the observations
     for i in range(len(X1)):
-        L_hoods[i] = likely(X1[i][1],X1[i][2],traj[X1[0][0]])    
+        L_hood = L_hood + sum(likely(X1[i][1],X1[i][2],traj[X1[0][0]]/incr))    
     
-    return L_hoods
+    return L_hood
 
     
 ###############################################################################
