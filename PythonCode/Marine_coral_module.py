@@ -108,12 +108,49 @@ def LN(mean,variance,sample):
 #likelyhood distribution is by default log-normal 
 
 def MarineLk1( X1, par1, initial_cond, start_t, end_t, incr,likely=LN ):
-    # solve the system first with the current parameters
-    # Measure the likelihood of the data under the current parameters
     
+    """ This solves the system first with given params and measures likelyhood
     
+    X1 is a dicitonary for the arrays including the observation time, 
+    the observation, and variance information. Keys are integers, representing
+    the nth observation in the sequence, thus
     
-    return res1
+    X1[1] = (time of obs 1, array of obs, arrary of associated variances)
+    
+    The inputs are given as 
+    
+    X1           = dictionary containing observation information
+    par1         = current guess at parameters for the likelyhood funciton
+    initial_cond = the initial conditions for the state variables
+    start_t      = begining time of the experiment
+    end_t        = end time of the experiemnt
+    incr         = time step for the ODE solver
+    likely       = likelyhood funciton, defaul log scale log-normal
+    
+    The function returns the likelyhood function for the model run under
+    the initial conditions and parameters given the observational data."""
+    
+    #unpack the parameters and put them in the input form for the derivative
+    A = X1[0:6]
+    B = X1[6:8]
+    C = X1[8:10]
+    K = X1[10:13]
+    R = X1[13:]
+    
+    #define the array of time steps to integrate on
+    time = linspace(start_t,end_t, end_t-start_t/incr +1)
+
+    #trajectory is integrated
+    traj = odeint(Comp_D, initial_cond, time, args = (A,B,C,K,R))
+
+    #dictionary of likelyhoods for each observation is created
+    L_hoods = {}
+
+    #trajectory at obsservation times is compared with the observations
+    for i in range(len(X1)):
+        L_hoods[i] = likely(X1[i][1],X1[i][2],traj[X1[0][0]])    
+    
+    return L_hoods
 
     
 ###############################################################################
