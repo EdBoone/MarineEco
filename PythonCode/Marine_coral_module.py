@@ -65,6 +65,7 @@ def Comp_D(initial_cond,t,A,B,C,K,R):
     dx5 = b35*x3*x5 - c5*x5
     
     return array([dx1,dx2,dx3,dx4,dx5])
+    
 ###############################################################################
 # Create the log Normal density on the log scale.
 
@@ -139,11 +140,11 @@ def MarineLk1( X1, par1, initial_cond, start_t, end_t, incr,likely=LN ):
     the initial conditions and parameters given the observational data."""
     
     #unpack the parameters and put them in the input form for the derivative
-    A = X1[0:6]
-    B = X1[6:8]
-    C = X1[8:10]
-    K = X1[10:13]
-    R = X1[13:]
+    A = par[0:6]
+    B = par[6:8]
+    C = par[8:10]
+    K = par[10:13]
+    R = par[13:]
     
     #define the array of time steps to integrate on
     time = linspace(start_t,end_t, end_t-start_t/incr +1)
