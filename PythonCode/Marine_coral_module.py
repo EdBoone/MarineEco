@@ -116,7 +116,7 @@ def chisqln( x1, df1 ):
 # Create the log-scale likelihood for the marine eco data
 #likelyhood distribution is by default log-normal 
 
-def MarineLk1( X1, par1, initial_cond, start_t, end_t, incr,likely=LN ):
+def MarineLk1( X1, par, initial_cond, start_t, end_t, incr,likely=LN ):
     
     """ This solves the system first with given params and measures likelyhood
     
@@ -129,7 +129,7 @@ def MarineLk1( X1, par1, initial_cond, start_t, end_t, incr,likely=LN ):
     The inputs are given as 
     
     X1           = dictionary containing observation information
-    par1         = current guess at parameters for the likelyhood funciton
+    par          = current guess at parameters for the likelyhood funciton
     initial_cond = the initial conditions for the state variables
     start_t      = begining time of the experiment
     end_t        = end time of the experiemnt
@@ -147,7 +147,7 @@ def MarineLk1( X1, par1, initial_cond, start_t, end_t, incr,likely=LN ):
     R = par[13:]
     
     #define the array of time steps to integrate on
-    time = linspace(start_t,end_t, end_t-start_t/incr +1)
+    time = linspace(start_t,end_t, (end_t-start_t)/incr +1)
 
     #trajectory is integrated
     traj = odeint(Comp_D, initial_cond, time, args = (A,B,C,K,R))
@@ -157,7 +157,8 @@ def MarineLk1( X1, par1, initial_cond, start_t, end_t, incr,likely=LN ):
 
     #trajectory at obsservation times is compared with the observations
     for i in range(len(X1)):
-        L_hood = L_hood + sum(likely(X1[i][1],X1[i][2],traj[X1[0][0]]/incr))    
+        L_hood = L_hood + sum(likely(X1[i][1],X1[i][2],
+                                     traj[X1[0][0] - start_t]/incr))    
     
     return L_hood
 
