@@ -1,14 +1,14 @@
 #  Code for the MarineEco project
 
 from pylab import *
-import matplotlib.pyplot as plt
 from scipy.integrate import odeint
-from scipy import integrate
+from scipy.special import gammaln
+
 
 ###############################################################################
 # Define the time derivative for the competition model
 
-def Comp_D(initial_cond,t,A,B,C,K,R):
+def comp_d(initial_cond,t,A,B,C,R,K):
     """This is the time derivative for the competition predator-prey model
      
     The inputs are the array of initial conditions, a dummy time parameter
@@ -33,6 +33,10 @@ def Comp_D(initial_cond,t,A,B,C,K,R):
     c4  - mortality rate of x4
     c5  - mortality rate of x5
      
+    r1  - recruitment rate of coral
+    r2  - recruitment rate of macro algae
+    r3  - recruitment rate of turf
+
     k1  - carrying capacity of x1, up to 65%
     k2  - carrying capacity of x2, up to 100%     
     k3  - carrying capacity of x3, up to 60%
@@ -48,10 +52,10 @@ def Comp_D(initial_cond,t,A,B,C,K,R):
     [b24,b35]                 = B
     
     [c4,c5]                   = C
-    
-    [k1,k2,k3]                = K
-     
+         
     [r1,r2,r3]                = R
+
+    [k1,k2,k3]                = K
      
     #Calculate the derivatives
     dx1 = r1*x1 - r1*x1*(x1+a12*x2+a13*x3)/k1
@@ -65,19 +69,12 @@ def Comp_D(initial_cond,t,A,B,C,K,R):
     dx5 = b35*x3*x5 - c5*x5
     
     return array([dx1,dx2,dx3,dx4,dx5])
-    
-###############################################################################
-# Create the log Normal density on the log scale.
-
-def LogNormalLn( x1, mean1, sd1 ):
-    res1 = 1
-    return res1
-    
+        
 ###############################################################################
 #Here we define the log scale log-normal 
 #likelyhood function for the parameter estimates
 
-def LN(mean,sd1,sample):
+def ln_ls(mean, sd, outcomes):
     
     """This function evaluates the likelyhood of a given sample
     
@@ -87,48 +84,67 @@ def LN(mean,sd1,sample):
     
     Inputs are of the form
     
-    number of observed variables = shape(mean), shape(variance), shape(sample)
+    [number of obs, number of variables]  = shape(mean)
+    
+    [number of variables]                 = shape(sd) 
+
+    [number of obs, number of variables]  = shape(outcomes)
 
     Output is an array on lognormal scale of the likelyhood of each outcome
-    (sample) on given the associated mean and variance of the data."""
+    given the associated mean and (fixed) standard deviation of the data."""
     
     #define the log of the denominator
     # with multiplication across arrays with Schur product
-    denom  = -log(sample*sd1*sqrt(2.0*pi))
+    denom  = -log(outcomes*sd*sqrt(2.0*pi))
     #define the numerator in log scale
     #again operating on each array element individually
-    numer  = -0.5*((log(sample) - mean)/sd1)**2
+    numer  = -0.5*((log(outcomes) - mean)/sd)**2
     
     #calclulate the likelyhood
     output = numer + denom
+    output = sum(output)
     
     return(output)
 
 
 ###############################################################################
-# Create the chi square distribution on the Log scale    
-def chisqln( x1, df1 ):
-    out1 = -df1/2*np.log( 2 ) - sc.gammaln( df1/2 )
-    out1 = out1 + ( df1/2 - 1 )*np.log( x1 ) - x1/2
-    return out1
+# Create the chi square likelyhood on the Log scale    
+def chisq_ls(outcome,K):
+
+    """Log scale Chi Square likelyhood distribution given integer std normals
+    
+    This returns the log scale likelyhood of the outcome, given that it is
+    the sum of integer independent standard normal random variables.  This is
+    vectorized to take an array of independent outcomes and associated array
+    K of integers for the number of standard normals associated to the 
+    array element of the outcomes.  It returns the likelyhood of all
+    independent outcomes as their product (in log scale)."""
+    
+    #log of denominator
+    denom  = -K/2.0*log(2.0) - gammaln(K/2.0)
+    #log of numerator
+    numer  =  (K/2.0 - 1.0)*log(outcome) - outcome/2.0
+    #calculate the likelyhood of entire array in log scale
+    output = numer + denom
+    output = sum(output)
+    
+    return output
 
 ###############################################################################
 # Create the log-scale likelihood for the marine eco data
 #likelyhood distribution is by default log-normal 
 
-def MarineLk1( X1, par, initial_cond, start_t, end_t, incr,likely=LN ):
+def coral_lk(obs, var, par, init_cond, end_t, incr):
     
-    """ This solves the system first with given params and measures likelyhood
+    """This solves the system first with given params and measures likelyhood
     
-    X1 is a dicitonary for the arrays including the observation time, 
-    the observation, and variance information. Keys are integers, representing
-    the nth observation in the sequence, thus
-    
-    X1[1] = (time of obs 1, array of obs, arrary of associated variances)
+    Observations are assumed to all be of the full state dimension and given
+    yearly wihtout gaps.
     
     The inputs are given as 
     
-    X1           = dictionary containing observation information
+    obs          = array containing all observations of state
+    var          = array of (fixed) variances of the observations
     par          = current guess at parameters for the likelyhood funciton
     initial_cond = the initial conditions for the state variables
     start_t      = begining time of the experiment
@@ -143,22 +159,20 @@ def MarineLk1( X1, par, initial_cond, start_t, end_t, incr,likely=LN ):
     A = par[0:6]
     B = par[6:8]
     C = par[8:10]
-    K = par[10:13]
-    R = par[13:]
+    R = par[10:13]
+    K = par[13:]
     
     #define the array of time steps to integrate on
-    time = linspace(start_t,end_t, (end_t-start_t)/incr +1)
+    time = linspace(0,end_t, end_t/incr +1)
 
     #trajectory is integrated
-    traj = odeint(Comp_D, initial_cond, time, args = (A,B,C,K,R))
-
-    #dictionary of likelyhoods for each observation is created
-    L_hood = 0.0
+    traj = odeint(comp_d, init_cond, time, args = (A,B,C,R,K))
+    print(traj[traj<0])
+    #extract the points to compare the trajectory to the observations
+    outcomes = traj[::1/incr,:]  
 
     #trajectory at obsservation times is compared with the observations
-    for i in range(len(X1)):
-        L_hood = L_hood + sum(likely(X1[i][1],X1[i][2],
-                                     traj[X1[0][0] - start_t]/incr))    
+    L_hood = ln_ls(obs,var,outcomes)
     
     return L_hood
 
@@ -167,8 +181,32 @@ def MarineLk1( X1, par, initial_cond, start_t, end_t, incr,likely=LN ):
 # Create the log-posterior (up to proportionality constant)
 #for the marine eco data
 
-def MarinePst1( X1, par1, par2, initial_cond, start_t, end_t, incr):
-    res1 = 1
-    return res1
+def para_post(init_cond, par, obs, obs_sd, obs_df, 
+              par_mean, par_sd, end_t, incr):
+    
+    """This calculates the probability of the given parameters in the posterior
+    
+    Inputs are the initial conditions for the model, including all state
+    variables, the parameters to measure, the observational data to measure
+    against, the standard deviations of the observational data, degrees of
+    freedom for the observational variances,
+    the means of the parameters for the prior distribution, the variance 
+    of these parameters in the prior, the end time of the experiment 
+    and the integration interval.
+    
+    Note: this is written in log scale, so the sum is taken over the likelyhood
+    and the prior."""
+    
+    #define the parameters for the varience likelyhood function
+    par_l = par[:13]
+    
+    #find the likelyhood of the parameters given the observed data
+    post = coral_lk(obs, obs_sd, par, init_cond,end_t,incr) 
+    #multiply (in log scale) the likelyhood against the prior for the variances
+    post = post + chisq_ls(obs_sd**2,obs_df)
+    #multiple (in log scale) with the prior probability for the parameters
+    post = post + ln_ls(par_mean,par_sd,par_l)
+
+    return post
 
 ###############################################################################
