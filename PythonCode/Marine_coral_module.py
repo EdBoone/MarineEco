@@ -167,7 +167,7 @@ def coral_lk(obs, var, par, init_cond, end_t, incr):
 
     #trajectory is integrated
     traj = odeint(comp_d, init_cond, time, args = (A,B,C,R,K))
-    print(traj[traj<0])
+
     #extract the points to compare the trajectory to the observations
     outcomes = traj[::1/incr,:]  
 
@@ -201,7 +201,7 @@ def para_post(init_cond, par, obs, obs_sd, obs_df,
     par_l = par[:13]
     
     #find the likelyhood of the parameters given the observed data
-    post = coral_lk(obs, obs_sd, par, init_cond,end_t,incr) 
+    post = coral_lk_alt(obs, obs_sd, par, init_cond,end_t,incr) 
     #multiply (in log scale) the likelyhood against the prior for the variances
     post = post + chisq_ls(obs_sd**2,obs_df)
     #multiple (in log scale) with the prior probability for the parameters
@@ -210,3 +210,121 @@ def para_post(init_cond, par, obs, obs_sd, obs_df,
     return post
 
 ###############################################################################
+# Create the log-posterior (up to proportionality constant)
+#for the marine eco data
+
+def para_post_alt(init_cond, par, obs_1, obs_2, obs_sd_1, obs_sd_2,  
+                  obs_df_1, obs_df_2,par_mean, par_sd, end_t, incr, pt=False):
+    
+    """This calculates the probability of the given parameters in the posterior
+    
+    Inputs are the initial conditions for the model, including all state
+    variables, the parameters to measure, the observational data to measure
+    against, the standard deviations of the observational data, degrees of
+    freedom for the observational variances,
+    the means of the parameters for the prior distribution, the variance 
+    of these parameters in the prior, the end time of the experiment 
+    and the integration interval.
+    
+    Note: this is written in log scale, so the sum is taken over the likelyhood
+    and the prior."""
+    
+    #define the parameters for the varience likelyhood function
+    par_l = par[:13]
+    
+    #find the likelyhood of the parameters given the observed data
+    post = coral_lk_alt(obs_1, obs_2, obs_sd_1, obs_sd_2, 
+                        par, init_cond,end_t,incr,plt=pt) 
+    #multiply (in log scale) the likelyhood against the prior for the variances
+    post = post + chisq_ls(obs_sd_1**2,obs_df_1)
+    #multiply (in log scale) the likelyhood against the prior for the variances
+    post = post + chisq_ls(obs_sd_2**2,obs_df_2)    
+    #multiple (in log scale) with the prior probability for the parameters
+    post = post + ln_ls(par_mean,par_sd,par_l)
+
+    return post
+
+
+###############################################################################
+#RK4 integrator with built in break point in the case the parameter values
+#cause a singular system
+
+def CPPRK4(init_cond,end_time,time_step,A,B,C,R,K):
+    
+    """This is a RK4 integrator for the comp_d function
+    
+    This will return the trajectories of the initial conditions based on the
+    RK4 integration scheme.  Inputs include the initial conditions, the time
+    steps to be integrated on, and the array parameters A,B,C,R,K."""
+    
+    #Define the storage
+    state_dim = len(init_cond)
+    exp_len   = int(end_time/time_step)
+    #the trajectory starts at time zero and ends at the final time
+    traj      = zeros([exp_len+1, state_dim])
+    traj[0,:] = init_cond
+    
+    for i in range(exp_len):
+        d1   = comp_d(traj[i,:],i,A,B,C,R,K)
+        temp = traj[i,:] + (time_step/2.0)*d1
+        d2   = comp_d(temp,i,A,B,C,R,K)
+        temp = traj[i,:] + (time_step/2.0)*d2
+        d3   = comp_d(temp,i,A,B,C,R,K)
+        temp = traj[i,:] + time_step*d3
+        d4   = comp_d(temp,i,A,B,C,R,K)
+        
+        traj[i+1,:] = traj[i,:] + (time_step/6.0)*(d1+2.0*d2+2.0*d3+d4)
+        
+        #create a break in case system parameters are singular
+        if (any(traj[i+1,:] <= 1e-5)) or (any(traj[i+1,:] >= 5e2)):
+            traj[:,:] = inf
+            break
+    return(traj)
+
+###############################################################################
+#coral likelyhood function with break point to deal with singular systems
+
+def coral_lk_alt(obs_1, obs_2, var_1, var_2, par, init_cond, end_time, incr,
+                 plt = False):
+    
+    """This solves the system first with given params and measures likelyhood
+    
+    Observations are assumed to all be of the full state dimension and given
+    yearly wihtout gaps.
+    
+    The inputs are given as 
+    
+    obs          = array containing all observations of state
+    var          = array of (fixed) variances of the observations
+    par          = current guess at parameters for the likelyhood funciton
+    initial_cond = the initial conditions for the state variables
+    start_t      = begining time of the experiment
+    end_t        = end time of the experiemnt
+    incr         = time step for the ODE solver
+    
+    The function returns the likelyhood function for the model run under
+    the initial conditions and parameters given the observational data."""
+    
+    #unpack the parameters and put them in the input form for the derivative
+    A = par[0:6]
+    B = par[6:8]
+    C = par[8:10]
+    R = par[10:13]
+    K = par[13:]
+    
+    #trajectory is integrated
+    traj = CPPRK4(init_cond,end_time,incr,A,B,C,R,K)
+
+    if plt == True:
+            time = linspace(0,end_time,(end_time)/incr+1)
+            plot(time,traj)
+            show()
+
+    #extract the points to compare the trajectory to the observations
+    outcomes_1 = traj[::1/incr,:].T
+    outcomes_2 = traj[(end_time+1 - len(obs_2[:,0]))/incr::1/incr,1:]
+    #trajectory at obsservation times is compared with the observations
+    L_hood = ln_ls(obs_1,var_1,outcomes_1)
+    L_hood = ln_ls(obs_2,var_2,outcomes_2) + L_hood
+    
+    return L_hood
