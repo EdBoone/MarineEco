@@ -42,8 +42,6 @@ g_obs = x5[:3]
 
 #create observational array, each row representing a year, each column
 #a specific state variable
-#NOTE: this matches the experiment and the observations with
-# the starting year to be 2006
 obs_1 = c_obs
 obs_2 = array([m_obs,t_obs,b_obs,g_obs]).T
 init_cond = array([x1_init,x2_init,x3_init,x4_init,x5_init])

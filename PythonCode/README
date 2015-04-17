@@ -1,0 +1,12 @@
+This directory contains the code for the M-H algorithm that I produced for my SAMSI final.
+
+coral_diagnostics_rough is the first version of the M-H algorithm, tested on the data from 2005-2012
+
+coral_diagnostics_single_sample is the revision of the above to calculate the parameters for the 1997-2007 period
+
+coral_diagnostics_batch is the batch sampling version of the single sample
+
+Marine_coral_module contains the important functions for the M-H algorithm
+NOTE: alt versions of functions in Marine_coral_module were written as workarounds to take the two different arrays of data, one for coral and one for the other species. These functions haven't been totally documented but they take two sets of data, associated standard deviations, etc... one for the period 1997 -2007 and one for 2005-2007.
+
+posterior_points_142 and posterior_weights_142 has the *143* samples produced from a long run of the algorithm with it's current parameter values.  The order of the points and the weights in their respective files match and the weights are log scale. 
